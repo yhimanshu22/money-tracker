@@ -1,28 +1,17 @@
-const { Hono } = require('hono');
-
+const express = require('express');
 const cors = require('cors');
-
 const mongoose = require('mongoose');
-
-const TransactionModel = require('./models/transaction.js');
-
+const TransactionModel = require('./models/transaction'); // Ensure the correct path to the transaction model
 require('dotenv').config();
 
-const app = new Hono();
+const app = express();
 
 // Middleware
 app.use(cors());
-
-app.use(async (c, next) => {
-  c.req.headers['content-type'] = 'application/json';
-  await next();
-});
-const MONGO_URI = 'mongodb+srv://yhimanshu22:i213FUFtM72bKZao@cluster0.vjju3sv.mongodb.net/' ;
-
-
+app.use(express.json());
 
 // Connect to MongoDB once when the server starts
-mongoose.connect(MONGO_URI , {
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
@@ -34,18 +23,19 @@ mongoose.connect(MONGO_URI , {
   process.exit(1); // Exit the process if unable to connect to the database
 });
 
-// Define routes
-app.get('/api/test', async (c) => {
-  return c.json({ message: 'test ok' });
+// Route to test API
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'test ok' });
 });
 
-app.post('/api/transaction', async (c) => {
+// Endpoint to handle POST requests for transactions
+app.post('/api/transaction', async (req, res) => {
   try {
-    const { name, price, description, datetime } = await c.req.json();
+    const { name, price, description, datetime } = req.body;
 
     // Validate required fields
     if (!name || !price || !description || !datetime) {
-      return c.json({ message: 'All fields are required' }, 400);
+      return res.status(400).json({ message: 'All fields are required' });
     }
 
     // Create the transaction
@@ -57,21 +47,27 @@ app.post('/api/transaction', async (c) => {
     });
 
     // Respond with the created transaction
-    return c.json(transaction);
+    res.json(transaction);
   } catch (error) {
     console.error('Error creating transaction:', error);
-    return c.json({ message: 'Internal server error' }, 500);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
-app.get('/api/transactions', async (c) => {
+// Endpoint to handle GET requests for transactions
+app.get('/api/transactions', async (req, res) => {
   try {
     const transactions = await TransactionModel.find();
-    return c.json(transactions);
+    res.json(transactions);
   } catch (error) {
     console.error('Error fetching transactions:', error);
-    return c.json({ message: 'Internal server error' }, 500);
+    res.status(500).json({ message: 'Internal server error' });
   }
 });
 
+const port = process.env.PORT || 4000;
 
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
