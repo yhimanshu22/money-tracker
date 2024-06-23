@@ -3,6 +3,10 @@ body {
   color: #ddd;
 }
 
+.heading h1{
+  color: orangered;
+}
+
 main {
   max-width: 400px;
   margin: 20px auto;

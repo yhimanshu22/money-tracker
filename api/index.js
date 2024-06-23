@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const TransactionModel = require('./models/transaction.js'); // Correct path to the transaction model
+const TransactionModel = require('./models/transaction.js'); // Ensure the correct path to the transaction model
 require('dotenv').config();
 
 const app = express();
@@ -9,6 +9,19 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Connect to MongoDB once when the server starts
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => {
+  console.log('Connected to MongoDB');
+})
+.catch((error) => {
+  console.error('Error connecting to MongoDB:', error);
+  process.exit(1); // Exit the process if unable to connect to the database
+});
 
 // Route to test API
 app.get('/api/test', (req, res) => {
@@ -18,12 +31,6 @@ app.get('/api/test', (req, res) => {
 // Endpoint to handle POST requests for transactions
 app.post('/api/transaction', async (req, res) => {
   try {
-    // Connect to MongoDB using the MONGO_URI from environment variables
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
     // Accessing the request body to get transaction details
     const { name, price, description, datetime } = req.body;
 
@@ -45,18 +52,19 @@ app.post('/api/transaction', async (req, res) => {
   } catch (error) {
     console.error('Error creating transaction:', error);
     res.status(500).json({ message: 'Internal server error' });
-  } finally {
-    // Disconnect from the database after the request is handled
-    await mongoose.disconnect();
   }
 });
 
-app.get('/api/transactions',async(req,res)=>{
-    await mongoose.connect(process.env.MONGO_URI)
-
-    const transactions =  await TransactionModel.find()
-    res.json(transactions)
-})
+// Endpoint to handle GET requests for transactions
+app.get('/api/transactions', async (req, res) => {
+  try {
+    const transactions = await TransactionModel.find();
+    res.json(transactions);
+  } catch (error) {
+    console.error('Error fetching transactions:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 const port = 4000;
 

@@ -72,6 +72,7 @@ function App() {
 
   return (
     <main>
+      <div className='heading'><h1>Money Tracker App</h1></div>
       <h1>${balance}<span>.{fraction}</span></h1>
       <form onSubmit={addNewTransaction}>
         <div className="basic">
