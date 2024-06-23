@@ -1,14 +1,17 @@
-const express = require('express');
+const { Hono } = require('hono');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const TransactionModel = require('./models/transaction.js'); // Ensure the correct path to the transaction model
 require('dotenv').config();
 
-const app = express();
+const app = new Hono();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(async (c, next) => {
+  c.req.headers['content-type'] = 'application/json';
+  await next();
+});
 
 // Connect to MongoDB once when the server starts
 mongoose.connect(process.env.MONGO_URI, {
@@ -24,19 +27,18 @@ mongoose.connect(process.env.MONGO_URI, {
 });
 
 // Route to test API
-app.get('/api/test', (req, res) => {
-  res.json('test ok');
+app.get('/api/test', (c) => {
+  return c.json({ message: 'test ok' });
 });
 
 // Endpoint to handle POST requests for transactions
-app.post('/api/transaction', async (req, res) => {
+app.post('/api/transaction', async (c) => {
   try {
-    // Accessing the request body to get transaction details
-    const { name, price, description, datetime } = req.body;
+    const { name, price, description, datetime } = await c.req.json();
 
     // Validate required fields
     if (!name || !price || !description || !datetime) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return c.json({ message: 'All fields are required' }, 400);
     }
 
     // Create the transaction
@@ -48,21 +50,21 @@ app.post('/api/transaction', async (req, res) => {
     });
 
     // Respond with the created transaction
-    res.json(transaction);
+    return c.json(transaction);
   } catch (error) {
     console.error('Error creating transaction:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    return c.json({ message: 'Internal server error' }, 500);
   }
 });
 
 // Endpoint to handle GET requests for transactions
-app.get('/api/transactions', async (req, res) => {
+app.get('/api/transactions', async (c) => {
   try {
     const transactions = await TransactionModel.find();
-    res.json(transactions);
+    return c.json(transactions);
   } catch (error) {
     console.error('Error fetching transactions:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    return c.json({ message: 'Internal server error' }, 500);
   }
 });
 
