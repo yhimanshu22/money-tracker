@@ -1,13 +1,15 @@
 const { Hono } = require('hono');
+const { serve } = require('@hono/node-server');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const TransactionModel = require('./models/transaction.js'); // Ensure the correct path to the transaction model
+const TransactionModel = require('./models/transaction.js');
 require('dotenv').config();
 
 const app = new Hono();
 
 // Middleware
 app.use(cors());
+
 app.use(async (c, next) => {
   c.req.headers['content-type'] = 'application/json';
   await next();
@@ -26,12 +28,11 @@ mongoose.connect(process.env.MONGO_URI, {
   process.exit(1); // Exit the process if unable to connect to the database
 });
 
-// Route to test API
-app.get('/api/test', (c) => {
+// Define routes
+app.get('/api/test', async (c) => {
   return c.json({ message: 'test ok' });
 });
 
-// Endpoint to handle POST requests for transactions
 app.post('/api/transaction', async (c) => {
   try {
     const { name, price, description, datetime } = await c.req.json();
@@ -57,7 +58,6 @@ app.post('/api/transaction', async (c) => {
   }
 });
 
-// Endpoint to handle GET requests for transactions
 app.get('/api/transactions', async (c) => {
   try {
     const transactions = await TransactionModel.find();
@@ -68,9 +68,8 @@ app.get('/api/transactions', async (c) => {
   }
 });
 
+// Start the server
 const port = 4000;
 
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+serve(app, { port });
+console.log(`Server is running on port ${port}`);

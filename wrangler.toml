@@ -1,0 +1,22 @@
+name = "money-tracker"
+type = "javascript"
+
+# Define the main entry point for your Worker
+main = "src/App.js"
+
+# Environment variables
+[vars]
+MONGO_URI = "mongodb+srv://yhimanshu22:n7fZb7j7e3SiH6PO@cluster0.vjju3sv.mongodb.net/"  # Replace with your MongoDB connection string
+
+# Additional build configuration (optional)
+# [build]
+# command = "npm run build"
+# upload.format = "modules"
+# upload.main = "./dist/index.js"
+# upload.dir = "./dist"
+
+
+
+# If using secrets
+# [secrets]
+# MY_SECRET = "my_secret_value"
