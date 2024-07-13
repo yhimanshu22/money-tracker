@@ -20,7 +20,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "server": "nodemon api/index.js",
+    "server": "node api/index.js",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
