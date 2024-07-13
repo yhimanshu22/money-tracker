@@ -7,7 +7,9 @@ function App() {
   const [description, setDescription] = useState('');
   const [transactions, setTransactions] = useState([]);
 
-  const REACT_APP_API_URL = 'http://localhost:4000';
+  //const REACT_APP_API_URL = 'http://localhost:4000'; //for development
+  
+  const REACT_APP_API_URL = 'https://money-tracker-spsj.onrender.com';  //for production
 
   useEffect(() => {
     getTransactions().then(setTransactions);
